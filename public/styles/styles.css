@@ -1,0 +1,35 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+  .chartMenu {
+    width: 100vw;
+    height: 80px;
+    padding: 10px;
+    color: #444444;
+    text-align: center;
+  }
+  .chartMenu h1 {
+    font-size: 40px;
+  }
+  .chartMenu h3 {
+    font-size: 24px;
+  }
+  .chartCard, .commentsSection {
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  .chartBox, .commentBox, .commentEntryBox {
+    width: 1000px;
+    padding: 20px;
+    border-radius: 20px;
+    border: solid 3px #FC4C02;
+    background: white;
+  }
+
+  

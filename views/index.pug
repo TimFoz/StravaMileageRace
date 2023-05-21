@@ -1,0 +1,53 @@
+doctype html
+html
+   head
+      meta(charset="utf-8")
+      meta(name="viewport", content="width=device-width, initial-scale=1")
+      title Tim vs Jack
+      link(rel="stylesheet", type="text/css", href="/styles/styles.css")
+   body
+      if flashMessage
+         h2 #{flashMessage}
+
+      div.chartMenu
+         h1 Tim vs Jack
+         h3 The Race to 3000 Miles
+
+      div.chartCard
+         div.chartBox 
+            canvas#myChart
+
+      
+      div.commentsSection
+         div.commentEntryBox
+            h1 Leave a comment
+            form(action = "/", method = "POST")
+               div
+                  label(for = "user") Name:
+                  input(name = "user")
+               br
+               div
+                  label(for = "comment") Comment:
+                  textarea(name = "comment" value = "Enter comment here")
+               br
+               button(type = "submit") Submit
+         
+      div.commentsSection
+         if comments
+            div.commentBox
+               each comment in comments
+                  strong
+                     p= comment.user + " says:"
+                  p=  '"' + comment.content + '"'
+                  p= comment.votes
+                  form(action = "/upvote/" + comment._id, method = "POST")
+                     button(type = "submit") Upvote
+                  form(action = "/downvote/" + comment._id, method = "POST")
+                     button(type = "submit") Downvote
+                      
+
+      script(src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js")
+      script(src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js")
+      script(src="/scripts/chart.js")
+
+
