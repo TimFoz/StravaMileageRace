@@ -22,14 +22,10 @@ html
          div.commentEntryBox
             h1 Leave a comment
             form(action = "/", method = "POST")
-               div
-                  label(for = "user") Name:
-                  input(name = "user")
-               br
-               div
-                  label(for = "comment") Comment:
-                  textarea(name = "comment" value = "Enter comment here")
-               br
+               label(for = "user") Name:
+               input(name = "user")
+               label(for = "comment") Comment:
+               textarea(name = "comment" value = "Enter comment here")
                button(type = "submit") Submit
          
       div.commentsSection
@@ -42,10 +38,13 @@ html
                   p= comment.votes
                   form(action = "/upvote/" + comment._id, method = "POST")
                      button(type = "submit") Upvote
+                     
                   form(action = "/downvote/" + comment._id, method = "POST")
                      button(type = "submit") Downvote
-                      
 
+      script.
+         var users = !{JSON.stringify(users).replace(/<\//g, "<\\/")}
+               
       script(src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js")
       script(src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js")
       script(src="/scripts/chart.js")
