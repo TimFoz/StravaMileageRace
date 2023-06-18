@@ -1,24 +1,32 @@
 'use strict';
 
-let timMiles = 1187.5;
+
+console.log(users);
+
+
+let timMiles =  1187.5;
 let jackMiles = 1098.9;
+
+var tim_user_id = 15807255;
+var jack_user_id = 98327767;
+var tim_user = users.find(function (user) {
+  return user.user_id === tim_user_id;
+});
+var jack_user = users.find(function (user) {
+  return user.user_id === jack_user_id;
+});
+
+
+if (tim_user) {
+  timMiles = (tim_user.mileage/1609).toFixed(1);
+}
+
+if (jack_user) {
+  jackMiles = (jack_user.mileage/1609).toFixed(1);
+}
 
 
 Chart.register(ChartDataLabels);
-
-let leader = timMiles > jackMiles ? "Tim" : timMiles != jackMiles ? "Jack" : "Noone";
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // setup 
