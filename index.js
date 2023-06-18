@@ -5,12 +5,11 @@ let upload = multer();
 let app = express();
 const axios = require('axios');
 require('dotenv').config();
-const fs = require('fs');
 
 
 
 
-const port = 80;
+const port = process.env.PORT;
 
 
 let mongoose = require('mongoose');
@@ -104,6 +103,7 @@ app.post('/', async function(req, res){
         // ToDo - Make this an async with error handling
         newComment.save();
         const comments = await Comment.find({});
+        const users = await User.find({});
         res.render('index', {comments: comments, flashMessage: "Comment successfully added!"});
     }
 });
@@ -151,9 +151,7 @@ app.get('/callback', async (req, res) => {
           grant_type: 'authorization_code',
         },
       });
-      const access_token = response.data.access_token;
-      const refresh_token = response.data.refresh_token;
-      const token_expiry_time = response.data.expires_at;
+      const [access_token, refresh_token, token_expiry_time]  = [response.data.access_token, response.data.refresh_token, response.data.expires_at]
       console.log(response.data);
   
 
