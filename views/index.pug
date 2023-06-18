@@ -22,10 +22,12 @@ html
          div.commentEntryBox
             h1 Leave a comment
             form(action = "/", method = "POST")
-               label(for = "user") Name:
-               input(name = "user")
-               label(for = "comment") Comment:
-               textarea(name = "comment" value = "Enter comment here")
+               div.formItem
+                  label(for = "user") Name:
+                  input(name = "user")
+               div.formItem
+                  label(for = "comment") Comment:
+                  textarea(name = "comment" value = "Enter comment here")
                button(type = "submit") Submit
          
       div.commentsSection
