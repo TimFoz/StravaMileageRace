@@ -104,7 +104,7 @@ app.post('/', async function(req, res){
         newComment.save();
         const comments = await Comment.find({});
         const users = await User.find({});
-        res.render('index', {comments: comments, flashMessage: "Comment successfully added!"});
+        res.render('index', {comments: comments, flashMessage: "Comment successfully added!", users: users});
     }
 });
 
@@ -130,7 +130,7 @@ app.post('/downvote/:id', async function(req, res){
 // AUTH ENDPOINT
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
-const redirect_uri = `http://f029-2a00-23c4-f7a1-7d01-789c-aed8-45cf-68a6.ngrok-free.app/callback`;
+const redirect_uri = `http://a121-2a00-23c4-f7a1-7d01-91f7-c339-8b6e-9d2d.ngrok-free.app/callback`;
 app.get('/authorize', (req, res) => {
     res.redirect(
       `https://www.strava.com/oauth/authorize?client_id=${client_id}&response_type=code&redirect_uri=${redirect_uri}&scope=activity:read`
