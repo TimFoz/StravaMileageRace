@@ -62,11 +62,15 @@ let commentSchema = mongoose.Schema({
 
 let userSchema = mongoose.Schema({
   user_id: Number,
-  name: String,
+  first_name: String,
+  surname: String,
   mileage: Number,
   access_token: String,
   refresh_token: String,
   token_expiry_time: Number,
+  image: String,
+  goal: Number,
+  time_stamp: Date,
 });
 
 let Comment = mongoose.model("Comment", commentSchema);
@@ -174,7 +178,8 @@ app.get('/callback', async (req, res) => {
 
 
     let athleteID = response.data.athlete.id;
-    let athleteName = `${response.data.athlete.firstname} ${response.data.athlete.lastname}`;
+    let athleteFirstName = response.data.athlete.firstname;
+    let athleteLastName = response.data.athlete.lastname;
     const athleteStatsResponse = await axios.get(`https://www.strava.com/api/v3/athletes/${athleteID}/stats`, {
       headers: {
         Authorization: `Bearer ${access_token}`,
@@ -184,11 +189,15 @@ app.get('/callback', async (req, res) => {
 
     let newUser = new User({
       user_id: athleteID,
-      name: athleteName,
+      first_name: athleteFirstName,
+      surname: athleteLastName,
       mileage: athleteMileage,
       access_token: access_token,
       refresh_token: refresh_token,
       token_expiry_time: token_expiry_time,
+      image: 'default.png',
+      goal: 3000,
+      time_stamp: new Date()
     });
     newUser.save();
 
@@ -231,7 +240,8 @@ app.post('/webhook', async (req, res) => {
 
 // UPDATE ALL USER MILEAGES
 app.get('/updateall', async (req, res) => {
-  const user_ids = [15807255, 98327767];
+  const users = await User.find({});
+  const user_ids = users.map(user => user.user_id);
   for (let i = 0; i < user_ids.length; i++) {
     const user_id = user_ids[i];
     try {
@@ -242,7 +252,6 @@ app.get('/updateall', async (req, res) => {
     }
   };
   const comments = await Comment.find({});
-  const users = await User.find({});
   res.render(
     'index',
     {
@@ -288,7 +297,8 @@ async function update_mileage_for_user(user_id) {
       mileage: new_mileage,
       access_token: access_token,
       refresh_token: refresh_token,
-      token_expiry_time: token_expiry_time
+      token_expiry_time: token_expiry_time,
+      time_stamp: new Date
     }
   ).exec();
   console.log(`mileage for user ${user_id} updated to ${new_mileage}`);
