@@ -68,7 +68,10 @@ let userSchema = mongoose.Schema({
   access_token: String,
   refresh_token: String,
   token_expiry_time: Number,
-  image: String,
+  image: {
+    type: String,
+    default: 'default.png'
+  },
   goal: Number,
   time_stamp: Date,
 });
@@ -130,9 +133,6 @@ app.post('/', async function (req, res) {
   }
 });
 
-
-
-
 // UPVOTE/DOWNVOTE ENDPOINTS
 app.post('/upvote/:id', async function (req, res) {
   let doc = await Comment.findByIdAndUpdate(req.params.id, { $inc: { votes: 1 } });
@@ -187,19 +187,25 @@ app.get('/callback', async (req, res) => {
     });
     let athleteMileage = athleteStatsResponse.data.ytd_run_totals.distance;
 
-    let newUser = new User({
-      user_id: athleteID,
-      first_name: athleteFirstName,
-      surname: athleteLastName,
-      mileage: athleteMileage,
-      access_token: access_token,
-      refresh_token: refresh_token,
-      token_expiry_time: token_expiry_time,
-      image: 'default.png',
-      goal: 3000,
-      time_stamp: new Date()
-    });
-    newUser.save();
+    //ToDo - Don't add a new user record if user_id already in the table, rather just update everything else
+
+    var query = { user_id: athleteID },
+      update = {
+        user_id: athleteID,
+        first_name: athleteFirstName,
+        surname: athleteLastName,
+        mileage: athleteMileage,
+        access_token: access_token,
+        refresh_token: refresh_token,
+        token_expiry_time: token_expiry_time,
+        goal: 3000,
+        time_stamp: new Date()
+      },
+      options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+    // Find the document
+    await User.findOneAndUpdate(query, update, options).exec();
+
 
     const comments = await Comment.find({});
     const users = await User.find({});
@@ -216,11 +222,6 @@ app.get('/callback', async (req, res) => {
     res.status(500).send('Error occurred during authorization.');
   }
 });
-
-
-
-
-
 
 
 // WEBHOOKS ENDPOINT
