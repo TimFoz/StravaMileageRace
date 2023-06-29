@@ -1,34 +1,52 @@
-let express = require('express');
-let bodyParser = require('body-parser');
-let multer = require('multer');
-let upload = multer();
-let app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+const upload = multer();
 const axios = require('axios');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
-
-
+dotenv.config();
 
 const port = process.env.PORT;
 
+const app = express();
 
-let mongoose = require('mongoose');
-const { response } = require('express');
 mongoose.connect('mongodb://127.0.0.1/my_db');
 
 
 
 // inbuilt middleware
 app.set('view engine', 'pug');
+app.locals.formatTimeAgo = formatTimeAgo;
+function formatTimeAgo(datetime) {
+  const currentTime = new Date();
+  const diff = Math.floor((currentTime - datetime) / 1000); // Time difference in seconds
+
+  if (diff < 60) {
+    return diff + " seconds ago";
+  } else if (diff < 3600) {
+    const minutes = Math.floor(diff / 60);
+    return minutes + " minutes ago";
+  } else if (diff < 86400) {
+    const hours = Math.floor(diff / 3600);
+    return hours + " hours ago";
+  } else if (diff < 2592000) {
+    const days = Math.floor(diff / 86400);
+    return days + " days ago";
+  } else if (diff < 31536000) {
+    const months = Math.floor(diff / 2592000);
+    return months + " months ago";
+  } else {
+    const years = Math.floor(diff / 31536000);
+    return years + " years ago";
+  }
+}
 app.set('views','./views');
 app.use(express.static('public'));
 app.use(express.static('images'));
-// for parsing application/json
 app.use(bodyParser.json()); 
-// for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true })); 
-//form-urlencoded
-// for parsing multipart/form-data
 app.use(upload.array()); 
 app.use(express.static('public'));
 
@@ -235,6 +253,64 @@ app.post('/webhook', async (req, res) => {
     ).exec();
     console.log(`mileage for user ${user_id} updated to ${new_mileage}`);
 });
+
+// WEBHOOKS ENDPOINT
+// Creates the endpoint for our webhook
+app.get('/updateall', async (req, res) => {
+  const user_ids = [15807255, 98327767];
+  for (let i = 0; i < user_ids.length; i++) {
+    const user_id = user_ids[i]; 
+    const user_auth_details = await User.findOne({ user_id: user_id }).exec();
+    let access_token = user_auth_details.access_token;
+    let refresh_token = user_auth_details.refresh_token;
+    let token_expiry_time = user_auth_details.token_expiry_time;
+    const current_epoch_time = Math.round(Date.now()/1000);
+    console.log(`current time: ${current_epoch_time}, token expiry time: ${token_expiry_time}`)
+
+    // Check whether auth token expired, and if so get new access_token, refresh_token and token_expiry_time
+    if (user_auth_details.token_expiry_time < Math.round(Date.now() / 1000)) {
+        console.log('token expired, getting a new one');
+        const response = await axios.post('https://www.strava.com/oauth/token', null, {
+            params: {
+                client_id,
+                client_secret,
+                refresh_token,
+                grant_type: 'refresh_token'
+            }
+        });
+        console.log(response.data);
+        access_token = response.data.access_token;
+        refresh_token = response.data.refresh_token;
+        token_expiry_time = response.data.expires_at;
+    };
+    const athleteStatsResponse = await axios.get(`https://www.strava.com/api/v3/athletes/${user_id}/stats`, {
+        headers: {
+          Authorization: `Bearer ${access_token}`, 
+        },
+    });
+    const new_mileage = athleteStatsResponse.data.ytd_run_totals.distance;
+    await User.findOneAndUpdate(
+        { user_id: user_id }, 
+        { 
+            mileage: new_mileage,
+            access_token: access_token,
+            refresh_token: refresh_token,
+            token_expiry_time: token_expiry_time
+        }
+    ).exec();
+    console.log(`mileage for user ${user_id} updated to ${new_mileage}`);
+  };
+  const comments = await Comment.find({});
+  const users = await User.find({});
+  res.render(
+    'index',
+    {
+        comments: comments,
+        users: users
+    },    
+);
+});
+  
 
 // Adds support for GET requests to our webhook
 app.get('/webhook', (req, res) => {

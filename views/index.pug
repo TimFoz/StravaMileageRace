@@ -5,48 +5,66 @@ html
       meta(name="viewport", content="width=device-width, initial-scale=1")
       title Tim vs Jack
       link(rel="stylesheet", type="text/css", href="/styles/styles.css")
+      link(rel="stylesheet", type="text/css", href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css")
    body
-      if flashMessage
-         h2 #{flashMessage}
-
-      div.chartMenu
-         h1 Tim vs Jack
-         h3 The Race to 3000 Miles
-
-      div.chartCard
-         div.chartBox 
-            canvas#myChart
-
-      
-      div.commentsSection
-         div.commentEntryBox
-            h1 Leave a comment
-            form(action = "/", method = "POST")
-               div.formItem
-                  label(for = "user") Name:
-                  input(name = "user")
-               div.formItem
-                  label(for = "comment") Comment:
-                  textarea(name = "comment" value = "Enter comment here")
-               button(type = "submit") Submit
-         
-      div.commentsSection
-         if comments
-            div.commentBox
-               each comment in comments
-                  strong
-                     p= comment.user + " says:"
-                  p=  '"' + comment.content + '"'
-                  p= comment.votes
-                  form(action = "/upvote/" + comment._id, method = "POST")
-                     button(type = "submit") Upvote
-                     
-                  form(action = "/downvote/" + comment._id, method = "POST")
-                     button(type = "submit") Downvote
+      section.hero.is-primary
+         .hero-body
+            p.title
+               | Tim vs Jack
+            p.subtitle
+               | The race to 3000 miles
+      div.container 
+         if flashMessage
+            article.message.is-primary
+               .message-body
+                  | #{flashMessage}
+         section.section     
+            div.columns
+               div.column.is-two-thirds
+                  div.chartBox.box
+                     canvas#myChart
+                  div.box
+                     h1.title Add a comment
+                     form(action = "/", method = "POST")
+                        div.field
+                           label.label(for = "user") Name:
+                           .control 
+                              input.input(name = "user")
+                        div.field
+                           label.label(for = "comment") Comment:
+                           .control 
+                              textarea.textarea(name = "comment" placeholder = "Add a comment...")
+                        button.button(type = "submit") Submit
+               div.column
+                  each comment in comments
+                     article.media.box
+                        figure.media-left
+                           p.image.is-64x64
+                              img(src='https://bulma.io/images/placeholders/128x128.png')
+                        .media-content
+                           .content
+                              p
+                              strong=comment.user+" "
+                              small #{formatTimeAgo(comment.dateTime)} ago
+                              br
+                              |         #{comment.content}
+                           nav.level.is-mobile
+                              .level-left
+                              a.level-item
+                                 span.icon.is-small
+                                    i.fas.fa-reply
+                              a.level-item
+                                 span.icon.is-small
+                                    i.fas.fa-retweet
+                              a.level-item
+                                 span.icon.is-small
+                                    i.fas.fa-heart
+                        .media-right
+                           button.delete
 
       script.
          var users = !{JSON.stringify(users).replace(/<\//g, "<\\/")}
-               
+                  
       script(src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js")
       script(src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js")
       script(src="/scripts/chart.js")
