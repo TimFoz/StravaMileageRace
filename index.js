@@ -9,10 +9,11 @@ const mongoose = require('mongoose');
 dotenv.config();
 
 const port = process.env.PORT;
+const db_uri = process.env.MONGODB_URI;
 
 const app = express();
 
-mongoose.connect('mongodb://127.0.0.1/my_db');
+mongoose.connect(db_uri);
 
 
 
@@ -165,7 +166,7 @@ app.post('/downvote/:id', async function (req, res) {
 // AUTH ENDPOINT
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
-const redirect_uri = `http://a121-2a00-23c4-f7a1-7d01-91f7-c339-8b6e-9d2d.ngrok-free.app/callback`;
+const redirect_uri = process.env.REDIRECT_URI;
 app.get('/authorize', (req, res) => {
   res.redirect(
     `https://www.strava.com/oauth/authorize?client_id=${client_id}&response_type=code&redirect_uri=${redirect_uri}&scope=activity:read`
