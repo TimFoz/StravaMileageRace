@@ -103,6 +103,19 @@ app.get('/', async function (req, res) {
   );
 });
 
+app.get('/AuthSuccess', async function (req, res) {
+  const comments = await Comment.find({});
+  const users = await User.find({});
+  res.render(
+    'index',
+    {
+      comments: comments,
+      users: users,
+      flashMessage: "Strava successfully authenticated!"
+    },
+  );
+});
+
 // TIM'S SANDBOX FOR FUCKING AROUND
 app.get('/sandbox', function (req, res) {
   res.render('sandbox');
@@ -209,14 +222,7 @@ app.get('/callback', async (req, res) => {
 
     const comments = await Comment.find({});
     const users = await User.find({});
-    res.render(
-      'index',
-      {
-        comments: comments,
-        users: users,
-        flashMessage: "Strava Authentication Successful!"
-      },
-    );
+    res.redirect('/AuthSuccess')
   } catch (error) {
     console.error(error);
     res.status(500).send('Error occurred during authorization.');

@@ -7,20 +7,27 @@ html
       link(rel="stylesheet", type="text/css", href="/styles/styles.css")
       link(rel="stylesheet", type="text/css", href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css")
    body
-      section.hero.is-primary
+      section.hero.is-info
          .hero-body
             p.title
                | Tim vs Jack
             p.subtitle
-               | The race to 3000 miles
+               | The race to 3000 miles                  
       div.container 
-         if flashMessage
-            article.message.is-primary
-               .message-body
-                  | #{flashMessage}
          section.section     
+            if flashMessage
+               article.message.is-primary
+                  .message-body
+                     | #{flashMessage}
             div.columns
                div.column.is-two-thirds
+                  article.message.is-info
+                     .message-header
+                        p Want in?
+                     .message-body
+                        | Simply 
+                        a(href='/authorize') connect your Strava 
+                        |  to join the board today
                   div.chartBox.box
                      canvas#myChart
                   div.box
@@ -36,6 +43,7 @@ html
                               textarea.textarea(name = "comment" placeholder = "Add a comment...")
                         button.button(type = "submit") Submit
                div.column
+                  h1.title Comments
                   each comment in comments
                      article.media.box
                         figure.media-left
