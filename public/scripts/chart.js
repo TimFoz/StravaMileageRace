@@ -20,7 +20,7 @@ const getDaysRatio = () => {
   return ratio;
 };
 const pace = (3000 * getDaysRatio()).toFixed(1);
-const datapoints = users.map(user => (user.mileage / 1609).toFixed(1));
+const datapoints = users.map(user => (user.mileage / 1609.344).toFixed(1));
 
 const data = {
   labels: users.map(user => user.first_name),
