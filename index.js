@@ -77,8 +77,18 @@ let userSchema = mongoose.Schema({
   time_stamp: Date,
 });
 
+let activitySchema = mongoose.Schema({
+  user_id: Number,
+  activity_id: Number,
+  description: String,
+  distance: Number,
+  time_stamp: Date,
+  type: String,
+}, { strict: false });
+
 let Comment = mongoose.model("Comment", commentSchema);
 let User = mongoose.model("User", userSchema);
+let Activity = mongoose.model("Activity", activitySchema);
 
 
 
@@ -201,8 +211,6 @@ app.get('/callback', async (req, res) => {
     });
     let athleteMileage = athleteStatsResponse.data.ytd_run_totals.distance;
 
-    //ToDo - Don't add a new user record if user_id already in the table, rather just update everything else
-
     var query = { user_id: athleteID },
       update = {
         user_id: athleteID,
@@ -220,9 +228,6 @@ app.get('/callback', async (req, res) => {
     // Find the document
     await User.findOneAndUpdate(query, update, options).exec();
 
-
-    const comments = await Comment.find({});
-    const users = await User.find({});
     res.redirect('/AuthSuccess')
   } catch (error) {
     console.error(error);
@@ -240,6 +245,8 @@ app.post('/webhook', async (req, res) => {
   const user_id = req.body.owner_id;
   try {
     await update_mileage_for_user(user_id);
+    await update_ytd_activity(user_id);
+
   } catch (err) {
     console.log("error on /UpdateAll when updating mileage for UserID " + user_id);
     console.log(err);
@@ -259,17 +266,25 @@ app.get('/updateall', async (req, res) => {
       console.log(err);
     }
   };
-  const comments = await Comment.find({});
-  res.render(
-    'index',
-    {
-      comments: comments,
-      users: users
-    },
-  );
+  res.render('admin', { flashMessage: 'All YTD mileages sucessfully updated' });
 });
 
-async function update_mileage_for_user(user_id) {
+app.get('/UpdateYTDTable', async (req, res) => {
+  const users = await User.find({});
+  const user_ids = users.map(user => user.user_id);
+  for (let i = 0; i < user_ids.length; i++) {
+    const user_id = user_ids[i];
+    try {
+      await update_ytd_activity(user_id);
+    } catch (err) {
+      console.log("error on /UpdateYTDTable when updating mileage for UserID " + user_id);
+      console.log(err);
+    }
+  };
+  res.render('admin', { flashMessage: 'Activity log for all users updated' });
+});
+
+async function get_user_auth_token(user_id) {
   const user_auth_details = await User.findOne({ user_id: user_id }).exec();
   if (!user_auth_details) {
     throw new Error('no user with user_id ' + user_id)
@@ -277,7 +292,6 @@ async function update_mileage_for_user(user_id) {
   let access_token = user_auth_details.access_token;
   let refresh_token = user_auth_details.refresh_token;
   let token_expiry_time = user_auth_details.token_expiry_time;
-  const current_epoch_time = Math.round(Date.now() / 1000);
 
   // Check whether auth token expired, and if so get new access_token, refresh_token and token_expiry_time
   if (user_auth_details.token_expiry_time < Math.round(Date.now() / 1000)) {
@@ -292,24 +306,81 @@ async function update_mileage_for_user(user_id) {
     access_token = response.data.access_token;
     refresh_token = response.data.refresh_token;
     token_expiry_time = response.data.expires_at;
+    await User.findOneAndUpdate(
+      { user_id: user_id },
+      {
+        access_token: access_token,
+        refresh_token: refresh_token,
+        token_expiry_time: token_expiry_time,
+        time_stamp: new Date
+      }
+    ).exec();
   };
+  return access_token;
+}
+
+async function update_mileage_for_user(user_id) {
+
+  let access_token = await get_user_auth_token(user_id); // Await the promise returned by get_user_auth_token
+
   const athleteStatsResponse = await axios.get(`https://www.strava.com/api/v3/athletes/${user_id}/stats`, {
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
   });
   const new_mileage = athleteStatsResponse.data.ytd_run_totals.distance;
+
   await User.findOneAndUpdate(
     { user_id: user_id },
     {
       mileage: new_mileage,
-      access_token: access_token,
-      refresh_token: refresh_token,
-      token_expiry_time: token_expiry_time,
-      time_stamp: new Date
+      time_stamp: new Date()
     }
   ).exec();
-  console.log(`mileage for user ${user_id} updated to ${new_mileage}`);
+
+}
+
+async function update_ytd_activity(user_id) {
+  const access_token = await get_user_auth_token(user_id);
+
+  let page = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const ytd_activity = await axios.get(
+      `https://www.strava.com/api/v3/athlete/activities?before=1688421603&after=1672531201&page=${page}&per_page=50`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    let data = ytd_activity.data;
+
+    if (data.length === 0) {
+      hasNextPage = false;
+    } else {
+      for (let i = 0; i < data.length; i++) {
+        const activity = data[i];
+        if (!(['Run', 'TrailRun', 'VirtualRun'].includes(activity.sport_type))) { continue; } // skip non-running
+        var query = { activity_id: activity.id },
+          update = {
+            user_id: activity.athlete.id,
+            activity_id: activity.id,
+            description: activity.name,
+            distance: activity.distance,
+            time_stamp: activity.start_date_local,
+            activity_type: activity.sport_type
+          },
+          options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+        // Find the document or add if not found
+        await Activity.findOneAndUpdate(query, update, options).exec();
+      }
+      page++; // Move to the next page
+    }
+  }
 }
 
 
@@ -337,6 +408,9 @@ app.get('/webhook', (req, res) => {
   }
 });
 
+app.get('/admin', (req, res) =>
+  res.render('admin')
+)
 
 
 app.listen(port, () => {

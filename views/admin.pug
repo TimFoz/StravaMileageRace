@@ -1,0 +1,33 @@
+doctype html
+html
+   head
+      meta(charset="utf-8")
+      meta(name="viewport", content="width=device-width, initial-scale=1")
+      title Tim vs Jack - Admin Panel
+      link(rel="stylesheet", type="text/css", href="/styles/styles.css")
+      link(rel="stylesheet", type="text/css", href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css")
+   body
+      section.hero.is-info
+         .hero-body
+            p.title
+               | Tim vs Jack
+            p.subtitle
+               | The race to 3000 miles                  
+      div.container 
+         section.section
+            if flashMessage
+               article.message.is-primary
+                  .message-body
+                     | #{flashMessage}     
+            div.columns
+                div.column
+                    div.box
+                        h1.title Admin Panel
+                        p refresh all user mileages
+                        a.button(href='UpdateAll') refresh
+                        p refresh activity tables
+                        a.button(href='UpdateYTDTable') refresh
+                dic.column
+                    div.box
+                
+                
