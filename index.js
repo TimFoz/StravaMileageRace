@@ -334,7 +334,7 @@ async function update_ytd_activity(user_id) {
 
   while (hasNextPage) {
     const ytd_activity = await axios.get(
-      `https://www.strava.com/api/v3/athlete/activities?before=1688421603&after=1672531201&page=${page}&per_page=50`,
+      `https://www.strava.com/api/v3/athlete/activities?before=1704067199&after=1672531201&page=${page}&per_page=50`,
       {
         headers: {
           Authorization: `Bearer ${access_token}`,
