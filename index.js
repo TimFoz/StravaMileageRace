@@ -5,6 +5,12 @@ const upload = multer();
 const axios = require('axios');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const {
+  getDaysElapsed,
+  metersToMiles,
+  calculateCumulativeDistance,
+  formatTimeAgo,
+} = require('./utils.js');
 
 dotenv.config();
 
@@ -20,29 +26,6 @@ mongoose.connect(db_uri);
 // inbuilt middleware
 app.set('view engine', 'pug');
 app.locals.formatTimeAgo = formatTimeAgo;
-function formatTimeAgo(datetime) {
-  const currentTime = new Date();
-  const diff = Math.floor((currentTime - datetime) / 1000); // Time difference in seconds
-
-  if (diff < 60) {
-    return diff + " seconds ago";
-  } else if (diff < 3600) {
-    const minutes = Math.floor(diff / 60);
-    return minutes + " minutes ago";
-  } else if (diff < 86400) {
-    const hours = Math.floor(diff / 3600);
-    return hours + " hours ago";
-  } else if (diff < 2592000) {
-    const days = Math.floor(diff / 86400);
-    return days + " days ago";
-  } else if (diff < 31536000) {
-    const months = Math.floor(diff / 2592000);
-    return months + " months ago";
-  } else {
-    const years = Math.floor(diff / 31536000);
-    return years + " years ago";
-  }
-}
 app.set('views', './views');
 app.use(express.static('public'));
 app.use(express.static('images'));
@@ -91,25 +74,28 @@ let User = mongoose.model("User", userSchema);
 let Activity = mongoose.model("Activity", activitySchema);
 
 
-
-
-
-
-
-
-
-
 //////// handlers ////////
 
 // INDEX
 app.get('/', async function (req, res) {
   const comments = await Comment.find({});
   const users = await User.find({});
+  const activities_tim = await Activity.find({ user_id: 15807255 }).sort({ time_stamp: -1 });
+  const activities_jack = await Activity.find({ user_id: 98327767 }).sort({ time_stamp: -1 });
+
+
+
+
+  const lineData_tim = calculateCumulativeDistance(activities_tim);
+  const lineData_jack = calculateCumulativeDistance(activities_jack);
   res.render(
     'index',
     {
       comments: comments,
-      users: users
+      users: users,
+      lineData_tim: lineData_tim,
+      lineData_jack: lineData_jack,
+
     },
   );
 });
