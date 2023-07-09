@@ -13,7 +13,7 @@ const line_data = {
     fill: false,
     borderColor: '#FC4C02',
     backgroundColor: 'rgba(255, 159, 64, 0.2)',
-    tension: 0.1
+    pointRadius: 0.5,
   },
   {
     label: 'Jack',
@@ -21,7 +21,8 @@ const line_data = {
     fill: false,
     borderColor: '#3e8ed0',
     backgroundColor: '#eff5fb',
-    tension: 0.1
+    tension: 0.1,
+    pointRadius: 0.5,
   }]
 };
 
@@ -35,7 +36,13 @@ const line_config = {
       datalabels: {
         display: false,
       }
-    }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      }
+    },
+    maintainAspectRatio: false,
   }
 };
 
