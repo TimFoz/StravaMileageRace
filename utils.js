@@ -80,7 +80,6 @@ function formatTimeAgo(datetime) {
 
 module.exports = {
     getDaysElapsed,
-    metersToMiles,
     calculateCumulativeDistance,
     formatTimeAgo
 };  

@@ -4,119 +4,57 @@ const multer = require('multer');
 const upload = multer();
 const axios = require('axios');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
-const {
-  getDaysElapsed,
-  metersToMiles,
-  calculateCumulativeDistance,
-  formatTimeAgo,
-} = require('./utils.js');
-
 dotenv.config();
 
-const port = process.env.PORT;
-const db_uri = process.env.MONGODB_URI;
+const { formatTimeAgo } = require('./utils.js');
+const { Comment, User, Activity } = require('./db.js');
+const { getPageData } = require('./dataGetter.js');
 
 const app = express();
-
-mongoose.connect(db_uri);
-
-
 
 // inbuilt middleware
 app.set('view engine', 'pug');
 app.locals.formatTimeAgo = formatTimeAgo;
 app.set('views', './views');
 app.use(express.static('public'));
-app.use(express.static('images'));
+app.use(express.static('public/images'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(upload.array());
 app.use(express.static('public'));
 
 
-
-// Initialise DB
-let commentSchema = mongoose.Schema({
-  user: String,
-  votes: Number,
-  dateTime: Date,
-  content: String,
-});
-
-let userSchema = mongoose.Schema({
-  user_id: Number,
-  first_name: String,
-  surname: String,
-  mileage: Number,
-  access_token: String,
-  refresh_token: String,
-  token_expiry_time: Number,
-  image: {
-    type: String,
-    default: 'default.png'
-  },
-  goal: Number,
-  time_stamp: Date,
-});
-
-let activitySchema = mongoose.Schema({
-  user_id: Number,
-  activity_id: Number,
-  description: String,
-  distance: Number,
-  time_stamp: Date,
-  type: String,
-}, { strict: false });
-
-let Comment = mongoose.model("Comment", commentSchema);
-let User = mongoose.model("User", userSchema);
-let Activity = mongoose.model("Activity", activitySchema);
-
-
 //////// handlers ////////
+
+
 
 // INDEX
 app.get('/', async function (req, res) {
-  const comments = await Comment.find({});
-  const users = await User.find({});
-  const activities_tim = await Activity.find({ user_id: 15807255 }).sort({ time_stamp: -1 });
-  const activities_jack = await Activity.find({ user_id: 98327767 }).sort({ time_stamp: -1 });
-
-
-
-
-  const lineData_tim = calculateCumulativeDistance(activities_tim);
-  const lineData_jack = calculateCumulativeDistance(activities_jack);
+  const pageData = await getPageData();
   res.render(
     'index',
     {
-      comments: comments,
-      users: users,
-      lineData_tim: lineData_tim,
-      lineData_jack: lineData_jack,
-
+      comments: pageData.comments,
+      users: pageData.users,
+      lineData_tim: pageData.lineData.Tim,
+      lineData_jack: pageData.lineData.Jack,
     },
   );
 });
 
 app.get('/AuthSuccess', async function (req, res) {
-  const comments = await Comment.find({});
-  const users = await User.find({});
+  const pageData = await getPageData();
   res.render(
     'index',
     {
-      comments: comments,
-      users: users,
-      flashMessage: "Strava successfully authenticated!"
+      comments: pageData.comments,
+      users: pageData.users,
+      lineData_tim: pageData.lineData.Tim,
+      lineData_jack: pageData.lineData.Jack,
     },
   );
 });
 
-// TIM'S SANDBOX FOR FUCKING AROUND
-app.get('/sandbox', function (req, res) {
-  res.render('sandbox');
-});
 
 
 // COMMENT ENDPOINT
@@ -137,26 +75,19 @@ app.post('/', async function (req, res) {
     });
     // ToDo - Make this an async with error handling
     newComment.save();
-    const comments = await Comment.find({});
-    const users = await User.find({});
-    res.render('index', { comments: comments, flashMessage: "Comment successfully added!", users: users });
+    const pageData = await getPageData();
+    res.render(
+      'index',
+      {
+        comments: pageData.comments,
+        users: pageData.users,
+        lineData_tim: pageData.lineData.Tim,
+        lineData_jack: pageData.lineData.Jack,
+        flashMessage: "Comment successfully added!",
+      },
+    );
   }
 });
-
-// UPVOTE/DOWNVOTE ENDPOINTS
-app.post('/upvote/:id', async function (req, res) {
-  let doc = await Comment.findByIdAndUpdate(req.params.id, { $inc: { votes: 1 } });
-  res.redirect('/')
-});
-app.post('/downvote/:id', async function (req, res) {
-  let doc = await Comment.findByIdAndUpdate(req.params.id, { $inc: { votes: -1 } });
-  res.redirect('/')
-});
-
-
-
-
-
 
 
 // AUTH ENDPOINT
@@ -221,7 +152,6 @@ app.get('/callback', async (req, res) => {
   }
 });
 
-
 // WEBHOOKS ENDPOINT
 // Creates the endpoint for our webhook
 app.post('/webhook', async (req, res) => {
@@ -234,7 +164,7 @@ app.post('/webhook', async (req, res) => {
     await update_ytd_activity(user_id);
 
   } catch (err) {
-    console.log("error on /UpdateAll when updating mileage for UserID " + user_id);
+    console.log("error on /webhook when updating mileage for UserID " + user_id);
     console.log(err);
   }
 });
@@ -247,6 +177,7 @@ app.get('/updateall', async (req, res) => {
     const user_id = user_ids[i];
     try {
       await update_mileage_for_user(user_id);
+      await update_ytd_activity(user_id);
     } catch (err) {
       console.log("error on /UpdateAll when updating mileage for UserID " + user_id);
       console.log(err);
@@ -398,7 +329,7 @@ app.get('/admin', (req, res) =>
   res.render('admin')
 )
 
-
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
