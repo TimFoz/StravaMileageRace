@@ -4,6 +4,22 @@
 Chart.register(ChartDataLabels);
 
 
+const daily_pace = 3000 / 365;
+
+function daysElapsedInYear() {
+  const today = new Date();
+  const startOfYear = new Date(today.getFullYear(), 0, 1); // January 1st of the current year
+
+  const oneDayInMilliseconds = 1000 * 60 * 60 * 24;
+  const elapsedMilliseconds = today - startOfYear;
+
+  // Math.ceil is used to account for daylight saving time changes
+  const elapsedDays = Math.ceil(elapsedMilliseconds / oneDayInMilliseconds);
+
+  return elapsedDays;
+}
+
+let pace_array = Array(daysElapsedInYear() + 1).fill().map((x, i) => (i * daily_pace).toFixed(0));
 
 const line_data = {
   labels: lineData_tim.map(datapoint => datapoint[0]),
@@ -23,6 +39,17 @@ const line_data = {
     backgroundColor: '#eff5fb',
     tension: 0.1,
     pointRadius: 0.5,
+  },
+  {
+    label: 'Pacer',
+    data: pace_array,
+    fill: false,
+    borderColor: '#AAAAAA',
+    backgroundColor: '#DDDDDD',
+    tension: 0.1,
+    pointRadius: 0,
+    borderDash: [10, 5],
+    borderWidth: 2,
   }]
 };
 

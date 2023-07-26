@@ -1,8 +1,8 @@
 'use strict';
 
 
-const userIds = users.map(user => user.user_id)
 
+const labels = [...users.map(user => user.first_name), 'pacer']
 
 
 Chart.register(ChartDataLabels);
@@ -20,16 +20,16 @@ const getDaysRatio = () => {
   return ratio;
 };
 const pace = (3000 * getDaysRatio()).toFixed(1);
-const datapoints = users.map(user => (user.mileage / 1609.344).toFixed(1));
+const datapoints = [...users.map(user => (user.mileage / 1609.344).toFixed(1)), pace];
 
 const data = {
-  labels: users.map(user => user.first_name),
+  labels,
   datasets: [{
     label: 'YTD mileage',
     data: datapoints,
     barThickness: 20,
-    backgroundColor: users.map(user => 'rgba(255, 159, 64, 0.2)'),
-    borderColor: users.map(user => '#FC4C02'),
+    backgroundColor: labels.map(() => 'rgba(255, 159, 64, 0.2)'),
+    borderColor: labels.map(() => '#FC4C02'),
     borderWidth: 1
   }]
 };
@@ -43,9 +43,13 @@ const barAvatar = {
       scales: { x, y } } = chart;
     ctx.save()
 
-    for (let i = 0; i < users.length; i++) {
+    for (let i = 0; i < users.length + 1; i++) {
       const img = new Image();
-      img.src = users[i].image;
+      if (users[i]) {
+        img.src = users[i].image;
+      } else {
+        img.src = 'kippy.png';
+      }
       ctx.drawImage(img, x.getPixelForValue(i) - img.width / 2, y.getPixelForValue(datapoints[i]) - img.height / 2, img.width, img.height)
     }
   }
