@@ -1,0 +1,34 @@
+@charset "utf-8";
+
+@font-face {
+  font-family: Barbie;
+  src: url(barbie.ttf);
+}
+
+// Set your brand colors
+$pink1: #e305ad;
+$pink2: #f039b1;
+$pink3: #f658b8;
+$pink4: #ee71c3;
+$pink5: #f29ad8;
+
+// Update Bulma's global variables
+$family-sans-serif: Barbie, Helvetica;
+$primary: $pink2;
+$info: $pink1;
+
+h1.title,
+h2.subtitle {
+  color: $pink4; // Use another custom pink color
+}
+
+$family-primary: Barbie, Helvetica;
+
+.chartBox {
+  height: 600px;
+  max-width: 1000px;
+  max-height: 600px;
+}
+
+
+@import "../../node_modules/bulma/bulma.sass";

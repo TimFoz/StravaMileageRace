@@ -8,8 +8,6 @@ const labels = [...users.map(user => user.first_name), 'pacer']
 Chart.register(ChartDataLabels);
 
 
-
-
 const getDaysRatio = () => {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -28,8 +26,8 @@ const data = {
     label: 'YTD mileage',
     data: datapoints,
     barThickness: 20,
-    backgroundColor: labels.map(() => 'rgba(255, 159, 64, 0.2)'),
-    borderColor: labels.map(() => '#FC4C02'),
+    backgroundColor: labels.map(() => '#ee71c3'),
+    borderColor: labels.map(() => '#e305ad'),
     borderWidth: 1
   }]
 };
@@ -48,7 +46,7 @@ const barAvatar = {
       if (users[i]) {
         img.src = users[i].image;
       } else {
-        img.src = 'kippy.png';
+        img.src = 'barbie.png';
       }
       ctx.drawImage(img, x.getPixelForValue(i) - img.width / 2, y.getPixelForValue(datapoints[i]) - img.height / 2, img.width, img.height)
     }
@@ -68,7 +66,7 @@ const config = {
         anchor: 'end',
         align: 'top',
         offset: 30,
-        color: '#FC4C02',
+        color: '#e305ad',
         font: {
           weight: 'bold',
           size: 16
