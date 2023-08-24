@@ -1,12 +1,25 @@
 'use strict';
 
 
-let overlay = document.querySelector('.modal');
-let broken_2000 = users.filter(user => (user.mileage / 1609.344) > 2000 & (user.mileage / 1609.344) < 2025).map(user => user.first_name);
-let broken_3000 = users.filter(user => (user.mileage / 1609.344) > 3000 & (user.mileage / 1609.344)).map(user => user.first_name);
+const overlay = document.querySelector('.modal');
+const milestone_message_h1 = document.querySelector('.milestone-message');
 
-if (broken_2000.length) {
+// Figure out who just broke a milestone
+const users_broken_2000 = users.filter(user => (user.mileage / 1609.344) > 2000 & (user.mileage / 1609.344) < 2025).map(user => user.first_name);
+const users_broken_3000 = users.filter(user => (user.mileage / 1609.344) > 3000 & (user.mileage / 1609.344)).map(user => user.first_name);
+// Let's flash the message for whoever has broken the greatest milestone
+const users_broken = users_broken_3000.length ? users_broken_3000 : users_broken_2000
+const milestone_message = users_broken.length ?
+  `🥳 ${users_broken.join(" & ")} ${users_broken.length > 1 ? "have" : "has"} broken ${users_broken_3000.length ? 3000 : 2000} miles!!! 🥳`
+  : undefined
+
+if (milestone_message) {
+  //show modal window
   overlay.classList.add('is-active')
+  console.log(milestone_message)
+  milestone_message_h1.innerHTML = milestone_message
+
+  // TODO - move this mess out and import as a neat "fire_confetti" function
   const duration = 15 * 1000,
     animationEnd = Date.now() + duration,
     defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
@@ -39,13 +52,10 @@ if (broken_2000.length) {
     );
   }, 500);
 
-  // TODO - This is all a bit hacky, better to add a class to the overlay, or destroy it entirely
+
   setTimeout(function () {
     overlay.classList.remove('is-active');
-  }, 15000); // 20 seconds in milliseconds
-}
-else {
-  overlay.classList.remove('is-active');
+  }, 15000); // 15 seconds in milliseconds
 }
 
 document.addEventListener('DOMContentLoaded', () => {
