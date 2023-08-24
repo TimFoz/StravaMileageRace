@@ -11,8 +11,16 @@ html
             p.title
                | Barbie's Fabulous Footrace
             p.subtitle
-               | The 3000 Mile Stiletto Sprint                  
+               | The 3000 Mile Stiletto Sprint 
+                      
       div.container 
+         div.modal
+            div.modal-background
+            div.modal-content
+               div.box
+                  div.columns.is-centered
+                     div.column
+                        h1.title.has-text-centered 🥳 Tim and Jack have broken 2000 miles 🥳
          section.section     
             if flashMessage
                article.message.is-primary
@@ -79,9 +87,7 @@ html
          var lineData_tim = !{JSON.stringify(lineData_tim).replace(/<\//g, "<\\/")}
          var lineData_jack = !{JSON.stringify(lineData_jack).replace(/<\//g, "<\\/")}
 
-      div.overlay-container
-         div.overlay
-            p.overlay-message 🥳🥳🥳 Tim and Jack have broken 2000 miles 🥳🥳🥳
+      
 
       script(src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js")
       script(src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js")

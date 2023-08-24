@@ -1,10 +1,12 @@
 'use strict';
 
-let broken_2000 = users.filter(user => (user.mileage / 1609.344) > 2000 & (user.mileage / 1609.344) < 2025).map(user => user.first_name);
 
+let overlay = document.querySelector('.modal');
+let broken_2000 = users.filter(user => (user.mileage / 1609.344) > 2000 & (user.mileage / 1609.344) < 2025).map(user => user.first_name);
 let broken_3000 = users.filter(user => (user.mileage / 1609.344) > 3000 & (user.mileage / 1609.344)).map(user => user.first_name);
 
 if (broken_2000.length) {
+  overlay.classList.add('is-active')
   const duration = 15 * 1000,
     animationEnd = Date.now() + duration,
     defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
@@ -39,11 +41,23 @@ if (broken_2000.length) {
 
   // TODO - This is all a bit hacky, better to add a class to the overlay, or destroy it entirely
   setTimeout(function () {
-    var overlay = document.querySelector('.overlay');
-    overlay.style.display = 'none';
+    overlay.classList.remove('is-active');
   }, 15000); // 20 seconds in milliseconds
 }
 else {
-  var overlay = document.querySelector('.overlay');
-  overlay.style.display = 'none';
+  overlay.classList.remove('is-active');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  function closeModal($el) {
+    $el.classList.remove('is-active');
+  }
+
+  const modal = document.querySelector('.modal');
+  const modal_bg = document.querySelector('.modal-background');
+
+  modal_bg.addEventListener('click', () => {
+    closeModal(modal);
+  });
+
+});

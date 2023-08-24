@@ -14,33 +14,6 @@ h2.subtitle {
   max-height: 600px;
 }
 
-/* Add this CSS to style the overlay container and center the white box */
-.overlay-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  /* Ensure the overlay appears above other content */
-}
-
-.overlay {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-}
-
-.overlay-message {
-  font-size: 24px;
-  color: black;
-  text-align: center;
-}
-
 /*! bulma.io v0.9.4 | MIT License | github.com/jgthms/bulma */
 /* Bulma Utilities */
 .pagination-previous,
@@ -10321,6 +10294,10 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 .footer {
   background-color: hsl(0deg, 0%, 98%);
   padding: 3rem 1.5rem 6rem;
+}
+
+.modal-background {
+  background-color: rgba(10, 10, 10, 0.1);
 }
 
 /*# sourceMappingURL=styles.css.map */
