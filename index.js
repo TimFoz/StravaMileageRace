@@ -1,9 +1,11 @@
 const express = require('express');
+var parseurl = require('parseurl');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const upload = multer();
 const axios = require('axios');
 const dotenv = require('dotenv');
+const session = require('express-session')
 dotenv.config();
 
 const { formatTimeAgo } = require('./utils.js');
@@ -22,6 +24,25 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(upload.array());
 app.use(express.static('public'));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+}))
+app.use(function (req, res, next) {
+  if (!req.session.views) {
+    req.session.views = {}
+  }
+
+  // get the url pathname
+  var pathname = parseurl(req).pathname
+
+  // count the views
+  req.session.views[pathname] = (req.session.views[pathname] || 0) + 1
+
+  next()
+})
+
 
 
 //////// handlers ////////
@@ -38,6 +59,7 @@ app.get('/', async function (req, res) {
       users: pageData.users,
       lineData_tim: pageData.lineData.Tim,
       lineData_jack: pageData.lineData.Jack,
+      session: req.session
     },
   );
 });
@@ -51,6 +73,7 @@ app.get('/AuthSuccess', async function (req, res) {
       users: pageData.users,
       lineData_tim: pageData.lineData.Tim,
       lineData_jack: pageData.lineData.Jack,
+      session: req.session
     },
   );
 });
@@ -90,6 +113,10 @@ app.post('/', async function (req, res) {
 });
 
 
+// SESSION DEBUGGING
+app.get('/session', (req, res) => res.send(JSON.stringify(req.session)))
+
+
 // AUTH ENDPOINT
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
@@ -115,7 +142,6 @@ app.get('/callback', async (req, res) => {
       },
     });
     const [access_token, refresh_token, token_expiry_time] = [response.data.access_token, response.data.refresh_token, response.data.expires_at]
-    console.log(response.data);
 
 
     let athleteID = response.data.athlete.id;
@@ -144,6 +170,13 @@ app.get('/callback', async (req, res) => {
 
     // Find the document
     await User.findOneAndUpdate(query, update, options).exec();
+
+    // Set logged in session data 
+    if (!req.session.userData) {
+      req.session.userData = {}
+    }
+    req.session.userData.user_id = athleteID
+    req.session.userData.name = `${athleteFirstName} ${athleteLastName}`
 
     res.redirect('/AuthSuccess')
   } catch (error) {

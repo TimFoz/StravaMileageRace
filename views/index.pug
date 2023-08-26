@@ -11,7 +11,7 @@ html
             p.title
                | Barbie's Fabulous Footrace
             p.subtitle
-               | The 3000 Mile Stiletto Sprint 
+               | The 3000 Mile Stiletto Sprint
                       
       div.container 
          div.modal
@@ -29,12 +29,17 @@ html
             div.columns
                div.column.is-two-thirds
                   article.message.is-info
-                     .message-header
-                        p Want in?
-                     .message-body
-                        | Simply 
-                        a(href='/authorize') connect your Strava 
-                        |  to join the board today
+                     if session.userData
+                        div.box
+                           p You are logged in as #{session.userData.name}
+                     else
+                        .message-header
+                           p Not logged in
+                        .message-body
+                           | Simply 
+                           a(href='/authorize') log in with Strava 
+                           |  to join the board today and get personalised features
+                     
                   
                   h2.subtitle As it stands
                   div.chartBox.box
